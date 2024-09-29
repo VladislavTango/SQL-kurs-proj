@@ -1,0 +1,11 @@
+.table-container {
+    overflow-x: auto;
+    max-width: 100%;
+    max-height: 100%;
+  }
+.table-container .ant-table-pagination {
+    justify-content: flex-start;
+  }
+  .table-container .ant-table-tbody > tr > td {
+    height: 50%; 
+  }

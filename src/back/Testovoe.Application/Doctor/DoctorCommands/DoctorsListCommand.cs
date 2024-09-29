@@ -76,7 +76,7 @@ JOIN dbo.Regions drg ON d.DoctorsRegionId = drg.Id";
             .ApplyOrdering(gridifyQuery);
 
                 var paginatedResult = await Task.Run(() => filteredAndSortedQuery
-                    .Skip((request.Page - 1) * 20)
+                    .Skip((request.Page - 1) * 50)
                     .Take(20)
                     .ToList());
 

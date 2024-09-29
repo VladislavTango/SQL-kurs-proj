@@ -10,6 +10,7 @@ internal class Program
 
         builder.Services.AddAppContext();
 
+
         builder.Services.AddMediatRServices();
 
         builder.Services.AddControllers();
@@ -28,6 +29,12 @@ internal class Program
         app.UseHttpsRedirection();
 
         app.MapControllers();
+
+        app.UseCors(x => x
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+
 
         app.Run();
     }
