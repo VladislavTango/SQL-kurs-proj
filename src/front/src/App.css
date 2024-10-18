@@ -37,3 +37,10 @@ overflow: hidden;
     flex: 1;
     overflow: auto;
   }
+ header Button{
+    margin-right: 5%;
+    float: left;
+    flex-wrap: wrap;
+    margin-top: 1%;
+  }
+  

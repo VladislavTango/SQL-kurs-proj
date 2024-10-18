@@ -53,7 +53,7 @@ JOIN dbo.Regions drg ON d.DoctorsRegionId = drg.Id";
                                 doctor.Id = (int)reader["DoctorID"];
                                 doctor.FIO = (string)reader["FIO"];
                                 doctor.RoomNumber = (int)reader["RoomNumber"];
-                                doctor.SpecializationName = (string)reader["SpecializationName"];
+                                doctor.Specialization = (string)reader["SpecializationName"];
                                 doctor.Region = (int)reader["RegionNumber"];
                                 doctors.Add(doctor);
                             }
@@ -76,8 +76,8 @@ JOIN dbo.Regions drg ON d.DoctorsRegionId = drg.Id";
             .ApplyOrdering(gridifyQuery);
 
                 var paginatedResult = await Task.Run(() => filteredAndSortedQuery
-                    .Skip((request.Page - 1) * 50)
-                    .Take(20)
+                    .Skip((request.Page - 1) * request.PageNumbers)
+                    .Take(request.PageNumbers)
                     .ToList());
 
                 return paginatedResult;

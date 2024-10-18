@@ -5,6 +5,7 @@ namespace Testovoe.Application.Doctor.DoctorRequest
 {
     public class DoctorsListRequest : IRequest<List<DoctorsListResponse>>
     {
+        public int PageNumbers { get; set; }
         public string SortBy { get; set; } = "fio";
         public int Page { get; set; }
 

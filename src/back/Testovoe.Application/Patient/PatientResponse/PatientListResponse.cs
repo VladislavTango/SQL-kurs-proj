@@ -12,6 +12,6 @@ namespace Testovoe.Application.Patient.PatientResponse
         public string Address { get; set; }
         public DateTime BornTime { get; set; }
         public Sex Sex { get; set; }
-        public int PatientRegionNumber { get; set; }
+        public int patientRegion { get; set; }
     }
 }

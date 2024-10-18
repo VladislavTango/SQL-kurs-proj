@@ -26,7 +26,7 @@ namespace Testovoe.Application.Patient.PatientCommands
             };
 
             string CommandString = $@"
-SELECT 
+SELECT
     p.Id,
     p.Surname,
     p.Name,
@@ -34,11 +34,12 @@ SELECT
     p.Address,
     p.BornTime,
     p.Sex,
-    r.RegionNumber 
-FROM 
+    r.RegionNumber
+FROM
     applicationdb.dbo.Patients p
-JOIN 
-    applicationdb.dbo.Regions r ON p.PatientRegionId = r.RegionNumber;
+JOIN
+    applicationdb.dbo.Regions r ON p.PatientRegionId = r.Id;
+
 ";
 
             string connectionString = "Server=(localdb)\\mssqllocaldb;Database=applicationdb;Trusted_Connection=True;";
@@ -62,7 +63,7 @@ JOIN
                             responseElem.Address = (string) reader["Address"];
                             responseElem.BornTime = (DateTime) reader["BornTime"];
                             responseElem.Sex = (Sex) reader["Sex"];
-                            responseElem.PatientRegionNumber = (int) reader["RegionNumber"];
+                            responseElem.patientRegion = (int) reader["RegionNumber"];
                             responseList.Add(responseElem);
                         }
                     }
@@ -84,8 +85,8 @@ JOIN
         .ApplyOrdering(gridifyQuery);
 
             var paginatedResult = await Task.Run(() => filteredAndSortedQuery
-                .Skip((request.Page - 1) * 20)
-                .Take(20)
+                .Skip((request.Page - 1) * request.PageNumbers)
+                .Take(request.PageNumbers)
                 .ToList());
 
             return paginatedResult;

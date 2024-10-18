@@ -9,3 +9,8 @@
   .table-container .ant-table-tbody > tr > td {
     height: 50%; 
   }
+  .ant-table-cell-row-hover, .selected{
+    background-color: rgb(204, 231, 242) !important; 
+    cursor: pointer;
+  }
+  /*как протянуть из дочернего компонента в родительский react*/
