@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Button, Modal, Input, Space, message,Select } from 'antd';
-import axios from "react-axios"
+import { AddHttp } from '../../http/AddHttp.ts';
 
-const AddModal = ({ fields, SelectedKey }) => {
-  console.log(SelectedKey);
-  
+const AddModal = ({ fields, SelectedKey ,msg}) => {  
   const [formData, setFormData] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -34,44 +32,11 @@ const AddModal = ({ fields, SelectedKey }) => {
     setIsModalOpen(true);
   };
 
-  const handleOk = () => {
-    
-    switch(SelectedKey){
-    case 1:{
-    fetch('https://localhost:7119/api/Doctor/add', {
-      method: 'POST',
-      headers: {
-        'Accept': '*/*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    })
-    console.log(formData);
-    
-    break;
-    }
-    case 2:{
-      fetch('https://localhost:7119/api/Patient/add', {
-        method: 'POST',
-        headers: {
-          'Accept': '*/*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      })
-      
-      // axios.post('https://localhost:7119/api/Patient/add', formData, {
-      //   headers: {
-      //     'Accept': '*/*',
-      //     'Content-Type': 'application/json'
-      //   }
-      // })
-    break;
-    }
-    default:{console.log("):")};
-  };
-    
-  
+  const handleOk = async () => {
+    let response = AddHttp(formData , SelectedKey);
+
+    msg(response);
+
     setIsModalOpen(false);
   };
 
@@ -114,7 +79,7 @@ const AddModal = ({ fields, SelectedKey }) => {
  
   return (
     <div>
-      <Button size='large' type="primary" onClick={showModal}>
+      <Button size='large' type="primary" htmlType='submit' onClick={showModal}>
         Добавить запись
       </Button>
       <Modal title="Добавление записи в базу" open={isModalOpen} onOk={onOk} onCancel={handleCancel}>

@@ -6,8 +6,8 @@ namespace Testovoe.Application.Doctor.DoctorRequest
     {
         public int RedactId { get; set; }
         public string FIO { get; set; }
-        public int DoctorsRoom { get; set; }
+        public int RoomNumber { get; set; }
         public string Specialization { get; set; }
-        public int DoctorsRegion { get; set; }
+        public int Region { get; set; }
     }
 }

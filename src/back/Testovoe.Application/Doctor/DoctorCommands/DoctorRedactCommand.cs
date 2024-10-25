@@ -24,20 +24,19 @@ namespace Testovoe.Application.Doctor.DoctorCommands
                                begin
                                    insert Specializations(SpecializationName) values ('{request.Specialization}')
                                end
-                               if not exists(select * from Regions where RegionNumber = {request.DoctorsRegion})
+                               if not exists(select * from Regions where RegionNumber = {request.Region})
                                begin
-                                   insert Regions(RegionNumber) values ({request.DoctorsRegion})
+                                   insert Regions(RegionNumber) values ({request.Region})
                                end
-                               if not exists(select * from DoctorsRooms where RoomNumber = {request.DoctorsRoom})
+                               if not exists(select * from DoctorsRooms where RoomNumber = {request.RoomNumber})
                                begin
-                                   insert DoctorsRooms (RoomNumber, DoctorId) values ({request.DoctorsRoom}, {request.RedactId})
+                                   insert DoctorsRooms (RoomNumber, Id) values ({request.RoomNumber}, {request.RedactId})
                                end
                                update Doctors set FIO = '{request.FIO}',
-                               DoctorsRoomId = (select DoctorsRooms.Id from DoctorsRooms where DoctorsRooms.RoomNumber = {request.DoctorsRoom}),
+                               DoctorsRoomId = (select DoctorsRooms.Id from DoctorsRooms where DoctorsRooms.RoomNumber = {request.RoomNumber}),
                                SpecializationId = (select Specializations.Id from Specializations where SpecializationName = '{request.Specialization}'),
-                               DoctorsRegionId = (select Regions.Id from Regions where RegionNumber = {request.DoctorsRegion}) 
+                               DoctorsRegionId = (select Regions.Id from Regions where RegionNumber = {request.Region}) 
                                where id = {request.RedactId};";
-
             string connectionString = "Server=(localdb)\\mssqllocaldb;Database=applicationdb;Trusted_Connection=True;";
 
             using (SqlConnection connection = new SqlConnection(connectionString))

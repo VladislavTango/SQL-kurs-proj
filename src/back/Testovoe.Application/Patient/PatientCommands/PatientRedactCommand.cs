@@ -44,7 +44,7 @@ select @PatientId as id";
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 SqlCommand command = new SqlCommand(CommandString, connection);
-                command.Parameters.AddWithValue("@PatientRegion", request.PatientRegionNumber);
+                command.Parameters.AddWithValue("@PatientRegion", request.PatientRegion);
                 command.Parameters.AddWithValue("@Surname", request.Surname);
                 command.Parameters.AddWithValue("@Name", request.Name);
                 command.Parameters.AddWithValue("@Patronymic", request.Patronymic);

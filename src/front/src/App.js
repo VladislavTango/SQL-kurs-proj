@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { IdcardOutlined, UserOutlined, FieldNumberOutlined, EnvironmentFilled, TeamOutlined, ReloadOutlined } from '@ant-design/icons';
-import { Layout, Menu, theme, Button } from 'antd';
+import React, { useState , useEffect } from 'react';
+import {UserOutlined, TeamOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Layout, Menu, theme, Button, message } from 'antd';
 import './App.css';
-import TableComponent from './TableComponent/TableComponent.tsx';
-import AddModal from './Modal/AddModal.tsx';
+import TableComponent from './Components/TableComponent/TableComponent.tsx';
+import AddModal from './Components/Modal/AddModal.tsx';
+import RedactModal from "./Components/Modal/RedactModal.tsx"
+import { GetList } from "./http/GetListHttp.ts";
+import {useSessionStorage}  from "./hook/useSessionStorage.ts"
+import {DeleteHttp} from "./http/DeleteHttp.ts"
 
 const Doctorfields = [
   { name: 'fio', placeholder: 'ФИО', type: 'text' },
@@ -11,6 +15,7 @@ const Doctorfields = [
   { name: 'roomNumber', placeholder: 'Кабинет', type: 'number' },
   { name: 'region', placeholder: 'Регион', type: 'number' },
 ];
+
 const PatientField = [
   { name: 'surname', placeholder: 'Фамилия', type: 'text' },
   { name: 'name', placeholder: 'Имя', type: 'text' },
@@ -36,17 +41,57 @@ const items = [UserOutlined, TeamOutlined].map(
 
 
 const App  = () => {
+  const [msg , SetMsg] = useState('');
+  const [SelectedRow , SetSelectedRow] = useState(null);
+  const [CurrentPage] = useSessionStorage('CurrentPage', 1) 
+  const [pageSize] = useSessionStorage('pageSize', 50)
+  
   const [selectedKey, setSelectedKey] = useState(1);
+  const [data, setData] = useState([]); 
 
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer },
   } = theme.useToken();
 
   const handleMenuClick = (e) => {
-    console.log((e.key));
-    
     setSelectedKey(Number(e.key));
   };
+
+
+  const fetchData = async () => {
+    try {
+      const result = await GetList(selectedKey, pageSize, CurrentPage);
+      
+      setData(result);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  
+  const handlechildmsg = (msg) =>{
+    SetMsg(msg);
+  };
+
+  const HandlChildSelectedRow = (row) => {
+    console.log("SelectedRow updated:", row);
+    SetSelectedRow(row);
+  }  
+
+  useEffect(() => {
+    fetchData();
+  }, [pageSize, CurrentPage, selectedKey,msg]);
+
+const DeleteRow =async ()=>{
+  if(SelectedRow === "null"){
+    message.error("Выберите поле для редактирования")
+    return;
+  }
+  DeleteHttp((SelectedRow).id , selectedKey)
+  fetchData();
+}
+const Refresh = () =>{
+  fetchData();
+}
 
   return (
     <Layout className="full-height-layout">
@@ -65,23 +110,21 @@ const App  = () => {
       </Sider>
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }}>
-          <AddModal fields={ObjToSwitch[selectedKey - 1]} SelectedKey={selectedKey} />
+          <AddModal fields={ObjToSwitch[selectedKey - 1]} SelectedKey={selectedKey} msg = {handlechildmsg}/>
 
-          <Button className="custom-button" type="primary" size="large">
+          <Button className="custom-button" type="primary" size="large" onClick={DeleteRow}>
             Удалить запись
           </Button>
 
-          <Button className="custom-button" type="primary" size="large">
-            Редактировать запись
-          </Button>
+            <RedactModal fields={ObjToSwitch[selectedKey - 1]} SelectedKey={selectedKey} msg = {handlechildmsg} RowInf = {JSON.stringify(SelectedRow)}></RedactModal>
 
-          <Button className="custom-button" type="primary" size="large">
+          <Button className="custom-button" type="primary" size="large" onClick={Refresh}>
             <ReloadOutlined />
           </Button>
         </Header>
         <Content>
           <div className="table-container">
-            <TableComponent fields={ObjToSwitch[selectedKey-1]}  SelectedKey = {selectedKey}/>
+            <TableComponent fields={ObjToSwitch[selectedKey-1]}  data ={data} ParentSelectedRow = {HandlChildSelectedRow}/>
           </div>
         </Content>
       </Layout>

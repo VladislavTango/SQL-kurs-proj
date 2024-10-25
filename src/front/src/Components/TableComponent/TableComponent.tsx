@@ -3,89 +3,33 @@ import type { GetProp, TableProps } from 'antd';
 import { Table } from 'antd'; 
 import type { SorterResult } from 'antd/es/table/interface';
 import './TableComponent.css'; 
-import { GetList } from "../http/GetList"
+import { useSessionStorage } from 'usehooks-ts';
 
-type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
-
-interface DataType {
-  id: number;
-  fio: string;
-  roomNumber: number;
-  specializationName: string;
-  region: number;
-}
-
-interface Field {
-  name: string;
-  placeholder: string;
-  type: string;
-}
 
 interface TableParams {
   pagination?: TablePaginationConfig;
   sortField?: SorterResult<any>['field'];
-  sortOrder?: SorterResult<any>['order'];
   filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
 }
 
-interface TableComponentProps {
-  fields: Field[];
-  SelectedKey:number;
-}
-
-let SelectedRow = null;
 let clickedRowElement: HTMLElement | null = null;
 
-const TableComponent: React.FC<TableComponentProps> = ({fields,SelectedKey}) => {
+const TableComponent = ({fields,data,ParentSelectedRow}) => {
   
-  const [data, setData] = useState<DataType[]>([]);
-  const [loading, setLoading] = useState(false);
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
       current: 1,
       pageSize: 50,
     },
   });
+  
+  const [, setvalueCurrent] = useSessionStorage("CurrentPage",tableParams.pagination?.current);
+  const [, setvaluePage ] = useSessionStorage("pageSize",tableParams.pagination?.pageSize);
 
-  const fetchData = async () => { 
-    setLoading(true); 
-    let response : Response; 
-    switch(SelectedKey){ 
-      case 1: { 
-        response = await fetch( 
-          `https://localhost:7119/api/Doctor/getList?PageNumbers= 
-          ${tableParams.pagination?.pageSize}&SortBy=id&Page=${tableParams.pagination?.current}`, { 
-          method: 'GET', 
-          headers: { 
-            'Accept': '*/*'
-          } 
-        }); 
-        break; 
-      } 
-      case 2: { 
-        response = await fetch( 
-          `https://localhost:7119/api/Patient/getList?PageNumbers= 
-          ${tableParams.pagination?.pageSize}&SortBy=id&Page=${tableParams.pagination?.current}`, { 
-          method: 'GET', 
-          headers: { 
-            'Accept': '*/*' 
-          } 
-        }); 
-        break; 
-      } 
-      default: { 
-        break;
-      } 
-    } 
-    let result = response != null ? await response.json() : console.log("респонс пустой"); 
-
-    setData(result.map((item) => ({ 
-      ...item, 
-      key: item.id,
-    })));
-
-    setLoading(false);
+  const StorageSet = (tableParams) => {
+    setvalueCurrent(tableParams.pagination?.current);
+    setvaluePage(tableParams.pagination?.pageSize)
     setTableParams({ 
       ...tableParams, 
       pagination: { 
@@ -94,30 +38,27 @@ const TableComponent: React.FC<TableComponentProps> = ({fields,SelectedKey}) => 
       }, 
     });
   }
+
   useEffect(() => {
-    fetchData();
+    StorageSet(tableParams);
   }, [
     tableParams.pagination?.current,
     tableParams.pagination?.pageSize,
     tableParams?.sortOrder,
     tableParams?.sortField,
     JSON.stringify(tableParams.filters),
-    SelectedKey
   ]);
 
-  const handleTableChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter) => {
+  const handleTableChange = (pagination, filters) => {
     setTableParams({
       pagination,
       filters
     });
-
-    if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-      setData([]);
-    }
   };
 
   const handleRowClick = (record, event) => {
-    SelectedRow = record; 
+    
+    ParentSelectedRow(record); 
 
     if(clickedRowElement != null)
       clickedRowElement.classList.remove("selected");  
@@ -125,6 +66,7 @@ const TableComponent: React.FC<TableComponentProps> = ({fields,SelectedKey}) => 
     clickedRowElement = event.currentTarget.closest('tr'); 
     clickedRowElement.classList.add("selected") 
   };
+
   const fieldNameChecker = (fieldName: string, fieldValue: any) => {
     if(fieldName === "bornTime"){
     fieldValue = String(fieldValue).split("T")[0].split("-").reverse().join("-");   
@@ -132,9 +74,43 @@ const TableComponent: React.FC<TableComponentProps> = ({fields,SelectedKey}) => 
     if (fieldName === "sex") {
       return fieldValue === 0 ? "мужской" : "женский";
     }
+    if(typeof(fieldValue) === 'string'&&fieldValue.length>15){
+      fieldValue = fieldValue.substring(0,15);
+      fieldValue+="...";
+    }
+    // DIRECT BY MIROSLAV LAPANIK
+    // if (typeof(String(fieldValue)) === "string") {
+    //   if (String(fieldValue).length >= 10) {
+    //     if (String(fieldValue) !== "Мирослав"){
+    //       let arr = String(fieldValue).split('')
+    //       let str: Array<String> = []
+    //       let count = 0
+    //       while (true) {
+    //         str.push(arr[count])
+    //         count += 1
+    //         if (count === 15){
+    //           break
+    //         }
+    //       }
+    //       count = 0
+    //       while (true) {
+    //         str.push(".")
+    //         count ++
+    //         if (count === 3){
+    //           break
+    //         }
+    //       }
+    //       let qwe = str.join('')
+    //       fieldValue = qwe;
+
+    //     }
+    //   }
+    // }
+
     return fieldValue;
   };
-  const columns: ColumnsType<DataType> = [
+
+  const columns = [
     {
       title: 'Id',
       dataIndex: 'id',
@@ -146,17 +122,16 @@ const TableComponent: React.FC<TableComponentProps> = ({fields,SelectedKey}) => 
       dataIndex: field.name,
       key: `${field.name}-${index}`,
       width: "10%",
-      render: (text: any, record: DataType) => fieldNameChecker(field.name, record[field.name]),
+      render: (text: any, record) => fieldNameChecker(field.name, record[field.name]),
     }))
   ];
 
   return (
     <div className="table-container">
-      <Table<DataType>
+      <Table
         columns={columns}
         dataSource={data}
         pagination={tableParams.pagination}
-        loading={loading}
         onRow={(record) => ({
           onClick: (event) => handleRowClick(record, event),
         })}

@@ -30,5 +30,6 @@ export const GetList = async (SelectedKey, pageSize, currentPage) => {
   }
 
   const result = await response.json();
+    
   return result.map((item) => ({ ...item, key: item.id }));
 };

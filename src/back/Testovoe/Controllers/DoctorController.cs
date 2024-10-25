@@ -22,7 +22,7 @@ namespace Testovoe.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteDoctor([FromBody] DeleteDoctorRequest deleteDoctor) {
+        public async Task<IActionResult> DeleteDoctor([FromQuery] DeleteDoctorRequest deleteDoctor) {
             var response = await _mediator.Send(deleteDoctor);
             return Ok(response);
         }
